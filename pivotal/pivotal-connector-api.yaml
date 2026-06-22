@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: P2P Connector for Mojaloop APIs
   description: |
-    Specification for the Core Connector for Mojaloop API This API can be used by DFSP backends to simplify the process of sending and receiving funds within a Mojaloop scheme. **Note on terminology:** The term "Switch" is equal to the term "Hub", and the term "FSP" is equal to the term "DFSP".
+    Specification for the Pivotal  for Mojaloop API This API can be used by DFSP backends to simplify the process of sending and receiving funds within a Mojaloop scheme. **Note on terminology:** The term "Switch" is equal to the term "Hub", and the term "FSP" is equal to the term "DFSP".
   version: 1.0.0
 servers:
 - url: /
@@ -29,7 +29,7 @@ paths:
       - name: Authorization
         in: header
         description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, Transaction ID from the DFSP backend, used to reconcile transactions between
-    the Switch and the DFSP backend systems. In Mojaloop and PM4ML (SDK + Core Connector),
+    the Switch and the DFSP backend systems. In Mojaloop and Pivotal,
     this field is mandatory. However, most Core Banking Systems (CBS) generate the
     transaction ID only once the transaction stage is reached. Therefore, during
     the payer integration, the DFSP can provide a UUID in the initial call (e.g., KYC)
@@ -451,7 +451,7 @@ components:
     homeTransactionId:
       maxLength: 255
       type: string
-      description: "Transaction ID from the DFSP backend, used to reconcile transactions between the Switch and the DFSP backend systems. In Mojaloop and PM4ML (SDK + Core Connector), this field is mandatory. However, most Core Banking Systems (CBS) generate the transaction ID only once the transaction stage is reached. Therefore, during the payer integration, the DFSP can provide a UUID in the initial call (e.g., KYC) and later override it with the actual transaction ID (homeTransactionId) in the subsequent transaction confirmation call."
+      description: "Transaction ID from the DFSP backend, used to reconcile transactions between the Switch and the DFSP backend systems. In Mojaloop and Pivotal, this field is mandatory. However, most Core Banking Systems (CBS) generate the transaction ID only once the transaction stage is reached. Therefore, during the payer integration, the DFSP can provide a UUID in the initial call (e.g., KYC) and later override it with the actual transaction ID (homeTransactionId) in the subsequent transaction confirmation call."
     idSubValue:
       maxLength: 128
       minLength: 1
