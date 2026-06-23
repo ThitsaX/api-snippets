@@ -1,8 +1,8 @@
 openapi: 3.0.3 
 info:
-  title: P2P Connector for Mojaloop APIs
+  title: Pivotal Connector API for Mojaloop
   description: |
-    Specification for the Pivotal  for Mojaloop API This API can be used by DFSP backends to simplify the process of sending and receiving funds within a Mojaloop scheme. **Note on terminology:** The term "Switch" is equal to the term "Hub", and the term "FSP" is equal to the term "DFSP".
+    Specification for the Pivotal Connector API. This API is exposed by Pivotal to DFSP backends to simplify the process of sending and receiving funds within a Mojaloop scheme. **Note on terminology:** The term "Switch" is equal to the term "Hub", and the term "FSP" is equal to the term "DFSP".
   version: 1.0.0
 servers:
 - url: /
@@ -28,17 +28,11 @@ paths:
       parameters:
       - name: Authorization
         in: header
-        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, Transaction ID from the DFSP backend, used to reconcile transactions between
-    the Switch and the DFSP backend systems. In Mojaloop and Pivotal,
-    this field is mandatory. However, most Core Banking Systems (CBS) generate the
-    transaction ID only once the transaction stage is reached. Therefore, during
-    the payer integration, the DFSP can provide a UUID in the initial call (e.g., KYC)
-    and later override it with the actual transaction ID (homeTransactionId) in the
-    subsequent transaction confirmation call.in the Authorization header in the format Authorization: <JWT> to enable secure, authenticated API requests."
+        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The JWT payload MUST be the request body itself (the connector verifies the signed payload against the received body). Once generated, the JWT (the token) should be included in the Authorization header as the raw token in the format `Authorization: <JWT>` — do not use a `Bearer` prefix — to enable secure, authenticated API requests."
         required: true
         schema:
           type: string
-          description: Bearer token for authorization
+          description: Raw JWT, sent without a `Bearer` prefix
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       - name: fspiop-source
         in: header
@@ -56,9 +50,15 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/postSendMoneySuccess'
+        "400":
+          $ref: '#/components/responses/badRequest'
+        "401":
+          $ref: '#/components/responses/unauthorized'
+        "403":
+          $ref: '#/components/responses/forbidden'
         "500":
           $ref: '#/components/responses/postTransferServerError'
-  /secured/sendmoney/{transferId}(acceptParty):
+  /secured/sendmoney/{transferId} (Accept Party):
     put:
       tags:
       - sendmoney
@@ -76,11 +76,11 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header in the format Authorization: <JWT> to enable secure, authenticated API requests."
+        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header as the raw token in the format `Authorization: <JWT>` — do not use a `Bearer` prefix — to enable secure, authenticated API requests."
         required: true
         schema:
           type: string
-          description: Bearer token for authorization
+          description: Raw JWT, sent without a `Bearer` prefix
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       - name: fspiop-source
         in: header
@@ -96,9 +96,15 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/acceptPartySuccess'
+        "400":
+          $ref: '#/components/responses/badRequest'
+        "401":
+          $ref: '#/components/responses/unauthorized'
+        "403":
+          $ref: '#/components/responses/forbidden'
         "500":
           $ref: '#/components/responses/putAcceptPartyTransferServerError'
-  /secured/sendmoney/{transferId}(acceptQuote):
+  /secured/sendmoney/{transferId} (Accept Quote):
     put:
       tags:
       - sendmoney
@@ -116,11 +122,11 @@ paths:
           type: string
       - name: Authorization
         in: header
-        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header in the format Authorization: <JWT> to enable secure, authenticated API requests."
+        description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header as the raw token in the format `Authorization: <JWT>` — do not use a `Bearer` prefix — to enable secure, authenticated API requests."
         required: true
         schema:
           type: string
-          description: Bearer token for authorization
+          description: Raw JWT, sent without a `Bearer` prefix
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
       - name: fspiop-source
         in: header
@@ -136,30 +142,14 @@ paths:
       responses:
         "200":
           $ref: '#/components/responses/acceptQuoteSuccess'
+        "400":
+          $ref: '#/components/responses/badRequest'
+        "401":
+          $ref: '#/components/responses/unauthorized'
+        "403":
+          $ref: '#/components/responses/forbidden'
         "500":
           $ref: '#/components/responses/putAcceptQuoteTransferServerError'
-  /transfers/{transferId}:
-    get:
-      tags:
-      - sendmoney
-      summary:  Retrieves the current status and details of a specific transfer.
-      description: |
-        The `GET /transfers/{transferId}` endpoint returns the current status of a transfer,
-        including its state, direction, extensions, and any related error information.
-        This allows the client to verify the transfer's progress or final outcome.
-      operationId: getTransfersByTransferId
-      parameters:
-      - name: transferId
-        in: path
-        description: Transfer identifier.
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          $ref: '#/components/responses/getTransferSuccess'
-        "500":
-          $ref: '#/components/responses/getTransferError'  
   /dfsp-list-with-prefixes:
     get:
       tags:
@@ -203,7 +193,11 @@ components:
       - RECEIVE
     amount:
      type: string
-     pattern: "^([0]|([1-9][0-9]{0,13}))([.][0-9]{0,3}[0-9])?$"
+     description: |
+       Transfer amount as a canonical FSPIOP Amount string. No leading zeros and no sign; up to 18 integer digits and at most 4 decimal places, with no trailing zeros in the fractional part (e.g. `128`, `128.5`, `0.01`).
+       The maximum number of decimal places actually accepted is deployment-specific and is governed by the scheme's `DECIMAL_PLACES` configuration. For example, Guinea is configured with `DECIMAL_PLACES=0` (whole numbers only, so `10.01` is rejected), while other deployments (e.g. Liberia) may set it to `2` or `4`. Trailing zeros are ignored (`128.00` is treated as `128`), and any amount with more decimal precision than the configured `DECIMAL_PLACES` is rejected with a rounding error.
+     pattern: "^([0]|([1-9][0-9]{0,17}))([.][0-9]{0,3}[1-9])?$"
+     example: "128"
     currency:
       maxLength: 3
       minLength: 3
@@ -541,10 +535,20 @@ Allowed values:
     TransactionScenario:
 
       type: string
-      description: "Below are the allowed values for the enumeration. - TRANSFER - Used for performing a P2P (Peer to Peer, or Consumer to Consumer) transaction."
+      description: |
+        Below are the allowed values for the enumeration.
+        - DEPOSIT - Used for cash-in / deposit transactions.
+        - WITHDRAWAL - Used for cash-out / withdrawal transactions.
+        - TRANSFER - Used for performing a P2P (Peer to Peer, or Consumer to Consumer) transaction.
+        - PAYMENT - Used for merchant or bill payment transactions.
+        - REFUND - Used for refund transactions.
       example: TRANSFER
       enum:
+      - DEPOSIT
+      - WITHDRAWAL
       - TRANSFER
+      - PAYMENT
+      - REFUND
     AcceptPartyRequest:
       required:
       - acceptParty
@@ -557,9 +561,12 @@ Allowed values:
           - true
           - false
         amount:
-          type: number
-          description: A floating-point number (with the precision of `float` or `double`)
-          format: double
+          oneOf:
+          - $ref: '#/components/schemas/amount'
+          - type: number
+          description: |
+            Confirmed transfer amount, accepted as either a JSON string (canonical FSPIOP Amount, e.g. `"10"`) or a JSON number (e.g. `10`). The number of decimal places permitted is governed by the scheme's `DECIMAL_PLACES` configuration (see the `amount` schema) — for example, with Guinea's `DECIMAL_PLACES=0`, `"10"` and `10` are accepted but `"10.01"` is rejected.
+          example: "10"
         extensionList:
           $ref: '#/components/schemas/extensionList'
     acceptQuoteRequest:
@@ -567,8 +574,6 @@ Allowed values:
       - acceptQuote
       type: object
       properties:
-        homeTransactionId:
-          $ref: '#/components/schemas/homeTransactionId'
         acceptQuote:
           type: boolean
           enum:
@@ -584,6 +589,7 @@ Allowed values:
       required:
       - idType
       - idValue
+      - fspId
       type: object
       properties:
         type:
@@ -647,23 +653,6 @@ Allowed values:
       items:
         $ref: '#/components/schemas/dfspList'
 
-    getTransferResponse:
-      type: object
-      properties:
-        transferId:
-          $ref: '#/components/schemas/transferId'
-        currentState:
-          type: string
-          example: "succeeded"
-        direction:
-          type: string
-          enum:
-          - OUTBOUND
-        extensions:
-          $ref: '#/components/schemas/extensionList'
-        error:
-          $ref: '#/components/schemas/errorResponse'
-          
     postSendMoneyResponse:
       type: object
       properties:
@@ -697,7 +686,15 @@ Allowed values:
           - OUTBOUND
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
-        payeeFspFeeAmount:
+        payeeReceiveAmount:
+          type: string
+        transferAmount:
+          type: string
+        payeeFee:
+          type: string
+        payerFee:
+          type: string
+        schemeFee:
           type: string
         subScenario:
           $ref: '#/components/schemas/subScenario'
@@ -706,7 +703,7 @@ Allowed values:
     transferStatus:
       type: string
       description: |
-        Below are the allowed values for the enumeration - WAITING_FOR_PARTY_ACCEPTANCE An error has occurred during the transfer process.
+        Below are the allowed values for the enumeration.
         - WAITING_FOR_PARTY_ACCEPTANCE `AUTO_ACCEPT_PARTY` is set to "false" and party information has been returned, waiting to be accepted by the Payer DFSP using a `PUT /sendmoney/{transferId}` request.
         - WAITING_FOR_QUOTE_ACCEPTANCE `AUTO_ACCEPT_QUOTE` is set to "false" and quote information has been returned, waiting to be accepted by the Payer DFSP using a `PUT /sendmoney/{transferId}` request.
         - COMPLETED The transfer has completed successfully.
@@ -716,7 +713,6 @@ Allowed values:
       - WAITING_FOR_QUOTE_ACCEPTANCE
       - ABORTED
       - COMPLETED
-      - ERROR_OCCURRED
 
     acceptPartyResponse:
       type: object
@@ -756,7 +752,15 @@ Allowed values:
           - OUTBOUND
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
-        payeeFspFeeAmount:
+        payeeReceiveAmount:
+          type: string
+        transferAmount:
+          type: string
+        payeeFee:
+          type: string
+        payerFee:
+          type: string
+        schemeFee:
           type: string
         subScenario:
           $ref: '#/components/schemas/subScenario'
@@ -800,7 +804,15 @@ Allowed values:
           - OUTBOUND
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
-        payeeFspFeeAmount:
+        payeeReceiveAmount:
+          type: string
+        transferAmount:
+          type: string
+        payeeFee:
+          type: string
+        payerFee:
+          type: string
+        schemeFee:
           type: string
         subScenario:
           $ref: '#/components/schemas/subScenario'
@@ -810,6 +822,39 @@ Allowed values:
       
   responses:
 
+    badRequest:
+      description: The request was invalid or was missing a mandatory element.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            statusCode: "3100"
+            message: Generic validation error.
+            localeMessage: Generic validation error.
+            detailedDescription: "fspiop-source header or request.from.fspId is required."
+    unauthorized:
+      description: Authentication failed - the `Authorization` JWT is missing, malformed, or its signature/payload does not verify against the request body.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            statusCode: "3100"
+            message: Authentication error.
+            localeMessage: Authentication error.
+            detailedDescription: "Authorization signature verification failed."
+    forbidden:
+      description: The caller is not authorized to act for the specified payer FSP.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            statusCode: "3101"
+            message: Permission error.
+            localeMessage: Permission error.
+            detailedDescription: "fspiop-source is not authorized to act for the payer FSP."
     postSendMoneySuccess:
       description: Transfer completed successfully
       content:
@@ -829,12 +874,6 @@ Allowed values:
         application/json:
           schema:
             $ref: '#/components/schemas/acceptQuoteResponse' 
-    getTransferSuccess:
-      description: Transfer status retrieved successfully
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/getTransferResponse'
     getDfspPrefixSuccess:
       description: Dfps prefix list retrieved successfully
       content:
@@ -842,17 +881,6 @@ Allowed values:
           schema:
             $ref: '#/components/schemas/getDfspPrefixResponse'
 
-    getTransferError:
-      description: An error occurred checking the transfer
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/errorResponse'
-          example:
-            statusCode: "3208"
-            message: Payment is not successful.Please try again later.
-            localeMessage: Payment is not successful.Please try again later.
-            detailedDescription: "Transfer ID not found"
     postTransferServerError:
       description: An error occurred processing the transfer
       content:
@@ -908,7 +936,7 @@ Allowed values:
     AuthorizationHeader:
       name: Authorization
       in: header
-      description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header in the format Authorization: <JWT> to enable secure, authenticated API requests."
+      description: "The `Authorization` header field is used by the API for securely transmitting information in a compact and self-contained manner as a JSON object. The field must be set with a JWT (JSON Web Token) generated using an RSA private key in PKCS#8 format, loaded from a specified file (e.g., private_key.pem), and signed with the RS256 algorithm. Using PKCS#8 format ensures that the private key is stored in a standardized and secure way. The payload must include the necessary claims required by the API. The secure JWT (JSON Web Token) generated from a private key and payload. Once generated, the JWT (the token) should be included in the Authorization header as the raw token in the format `Authorization: <JWT>` — do not use a `Bearer` prefix — to enable secure, authenticated API requests."
       required: true
       schema:
         type: string
