@@ -730,11 +730,13 @@ Allowed values:
         Below are the allowed values for the enumeration.
         - WAITING_FOR_PARTY_ACCEPTANCE `AUTO_ACCEPT_PARTY` is set to "false" and party information has been returned, waiting to be accepted by the Payer DFSP using a `PUT /sendmoney/{transferId}` request.
         - WAITING_FOR_QUOTE_ACCEPTANCE `AUTO_ACCEPT_QUOTE` is set to "false" and quote information has been returned, waiting to be accepted by the Payer DFSP using a `PUT /sendmoney/{transferId}` request.
+        - PENDING The transaction is actively progressing through quote or transfer processing.
         - COMPLETED The transfer has completed successfully.
         - ABORTED The transfer has been ABORTED.
       enum:
       - WAITING_FOR_PARTY_ACCEPTANCE
       - WAITING_FOR_QUOTE_ACCEPTANCE
+      - PENDING
       - ABORTED
       - COMPLETED
 
