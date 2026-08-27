@@ -611,6 +611,10 @@ Allowed values:
           enum:
           - true
           - false
+        homeTransactionId:
+          allOf:
+          - $ref: '#/components/schemas/homeTransactionId'
+          description: Optional final payer DFSP transaction ID. When supplied, it replaces the homeTransactionId from the initial POST /secured/sendmoney call. When omitted, the initial value is retained. The effective value is forwarded to Mojaloop in POST /transfers extensionList using the homeTransactionId key.
         extensionList:
           $ref: '#/components/schemas/extensionList'
     transferId:
