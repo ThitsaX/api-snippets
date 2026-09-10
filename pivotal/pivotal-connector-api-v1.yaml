@@ -150,6 +150,82 @@ paths:
           $ref: '#/components/responses/forbidden'
         "500":
           $ref: '#/components/responses/putAcceptQuoteTransferServerError'
+  /secured/transferStatus/{transferId}:
+    get:
+      tags:
+      - transfer-status
+      summary: Retrieves the current status of a transfer
+      description: |
+        Returns Pivotal's persisted outcome for a transfer when the original response or
+        callback was not received. This is a read-only, idempotent fallback query and does
+        not replace the normal callback flow.
+
+        The caller must be either the payer or payee DFSP recorded for the transfer. A
+        request from any other DFSP returns the same not-found response as an unknown
+        `transferId`, so the endpoint does not reveal whether the transfer exists.
+
+        This GET request uses a compact RS256 JWS with the empty JSON object `{}` as its
+        payload. The protected header must contain `alg`, `typ`, `uri`, `method`, `date`,
+        and a fresh `nonce`. The `uri` must exactly match the request path, `method` must
+        be `GET`, and `date` must exactly match the HTTP `date` header and be within five
+        minutes of Pivotal's clock. A nonce can be used only once during the replay window.
+      operationId: securedGetTransferStatusByTransferId
+      parameters:
+      - name: transferId
+        in: path
+        description: The 26-character ULID returned by `POST /secured/sendmoney`.
+        required: true
+        schema:
+          type: string
+          minLength: 26
+          maxLength: 26
+          pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+          example: 01JAY7K3QK9Z8W4B6N2P5R7T3M
+      - name: authorization
+        in: header
+        description: |
+          Raw compact RS256 JWS without a `Bearer` prefix. The payload must be the empty
+          JSON object `{}` (`e30` when base64url encoded). The protected header must use
+          `alg: RS256`, `typ: JWT`, the exact request `uri`, `method: GET`, the same `date`
+          value as the HTTP header, and a fresh unique `nonce`.
+        required: true
+        schema:
+          type: string
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.e30.signature
+      - name: fspiop-source
+        in: header
+        description: The calling payer or payee DFSP identifier whose registered public key verifies the JWS.
+        required: true
+        schema:
+          type: string
+          maxLength: 32
+          example: EXAMPLEFSP
+      - name: date
+        in: header
+        description: |
+          Canonical RFC 7231 HTTP-date. It must be byte-identical to the `date` field in
+          the JWS protected header and within five minutes of Pivotal's clock.
+        required: true
+        schema:
+          type: string
+          pattern: "^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), [0-9]{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT$"
+          example: Mon, 25 Aug 2026 09:12:44 GMT
+      - name: accept
+        in: header
+        required: false
+        schema:
+          type: string
+          enum:
+          - application/json
+      responses:
+        "200":
+          $ref: '#/components/responses/getTransferStatusSuccess'
+        "401":
+          $ref: '#/components/responses/getTransferStatusUnauthorized'
+        "417":
+          $ref: '#/components/responses/getTransferStatusExpectationFailed'
+        "500":
+          $ref: '#/components/responses/getTransferStatusServerError'
   /dfsp-list-with-prefixes:
     get:
       tags:
@@ -790,6 +866,77 @@ Allowed values:
       - ABORTED
       - COMPLETED
 
+    transferStatusError:
+      type: object
+      required:
+      - statusCode
+      - message
+      - localeMessage
+      - detailedDescription
+      properties:
+        statusCode:
+          type: string
+          example: "3100"
+        message:
+          type: string
+        localeMessage:
+          type: string
+        detailedDescription:
+          type: string
+
+    transferStatusLookupResponse:
+      type: object
+      required:
+      - transferId
+      - homeTransactionId
+      - currentState
+      - possibleDispute
+      - amount
+      - currency
+      - initiatedTimestamp
+      - errorInformation
+      properties:
+        transferId:
+          type: string
+          minLength: 26
+          maxLength: 26
+          pattern: "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"
+          example: 01JAY7K3QK9Z8W4B6N2P5R7T3M
+        homeTransactionId:
+          type: string
+          maxLength: 128
+          nullable: true
+          example: TXN-2026-08-25-000417
+        currentState:
+          $ref: '#/components/schemas/transferStatus'
+        possibleDispute:
+          type: boolean
+          example: false
+        amount:
+          type: string
+          nullable: true
+          description: Canonical decimal string from the quotation; null when unavailable.
+          pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          example: "10000"
+        currency:
+          type: string
+          nullable: true
+          description: ISO 4217 currency code from the quotation; null when unavailable.
+          minLength: 3
+          maxLength: 3
+          example: LRD
+        initiatedTimestamp:
+          type: string
+          format: date-time
+          description: Transaction initiation timestamp in ISO 8601 UTC format.
+          example: "2026-08-25T09:12:31.204Z"
+        errorInformation:
+          type: object
+          nullable: true
+          description: Transaction failure details when currentState is ABORTED; null otherwise.
+          allOf:
+          - $ref: '#/components/schemas/transferStatusError'
+
     acceptPartyResponse:
       type: object
       properties:
@@ -976,6 +1123,72 @@ Allowed values:
               logoDataType: ""
               logoBase64: ""
               name: Demo Wallet 2
+
+    getTransferStatusSuccess:
+      description: Transfer status retrieved successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/transferStatusLookupResponse'
+          example:
+            transferId: 01JAY7K3QK9Z8W4B6N2P5R7T3M
+            homeTransactionId: TXN-2026-08-25-000417
+            currentState: COMPLETED
+            possibleDispute: false
+            amount: "10000"
+            currency: LRD
+            initiatedTimestamp: "2026-08-25T09:12:31.204Z"
+            errorInformation: null
+    getTransferStatusUnauthorized:
+      description: The request signature or signed request metadata is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            statusCode: "3105"
+            message: Payment is not successful. Please contact your service provider.
+            localeMessage: Payment is not successful. Please contact your service provider.
+            detailedDescription: Authorization signature verification failed.
+    getTransferStatusExpectationFailed:
+      description: A mandatory header is missing, the request is malformed, or the transfer is unavailable to the caller.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          examples:
+            missingHeader:
+              summary: Missing mandatory header (3102)
+              value:
+                statusCode: "3102"
+                message: Please fill out the complete and correct information.
+                localeMessage: Please fill out the complete and correct information.
+                detailedDescription: "Missing mandatory header: date."
+            malformedTransferId:
+              summary: Invalid transferId syntax (3101)
+              value:
+                statusCode: "3101"
+                message: Please fill out the complete and correct information.
+                localeMessage: Please fill out the complete and correct information.
+                detailedDescription: transferId must be a valid 26-character ULID.
+            transferNotFound:
+              summary: Unknown transfer or caller is not its payer/payee (3208)
+              value:
+                statusCode: "3208"
+                message: Payment is not successful. Please contact your service provider.
+                localeMessage: Payment is not successful. Please contact your service provider.
+                detailedDescription: Transfer ID not found.
+    getTransferStatusServerError:
+      description: An internal error occurred while retrieving the transfer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            statusCode: "2001"
+            message: Please try again later. If the problem continues, please contact your service provider.
+            localeMessage: Please try again later. If the problem continues, please contact your service provider.
+            detailedDescription: Unexpected exception or bug.
 
     postTransferServerError:
       description: An error occurred processing the transfer
