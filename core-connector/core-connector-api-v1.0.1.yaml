@@ -186,6 +186,7 @@ components:
     amount:
      type: string
      pattern: "^([0]|([1-9][0-9]{0,13}))([.][0-9]{0,3}[0-9])?$"
+     description: Amount transferred from the payer to the payee.
     currency:
       maxLength: 3
       minLength: 3
@@ -497,12 +498,13 @@ components:
       items:
         $ref: '#/components/schemas/Extension'
       description: |
-        Extension list containing fee catalyst values.
+        Extension list containing fee-related extension values.
 
-        Expected extension keys include:
-        - payerFeeCatalyst
-        - payeeFeeCatalyst
-        - schemeFeeCatalyst
+        Fee Engine (Catalyst) extension keys include:
+          - payerFeeCatalyst: The payer fee which is calculated by the Fee Engine (Catalyst).
+          - payeeFeeCatalyst: The payee fee which is calculated by the Fee Engine (Catalyst).
+          - schemeFeeCatalyst: The scheme fee which is calculated by the Fee Engine (Catalyst)
+
       example:
         - key: payerFeeCatalyst
           value: "613"
@@ -570,7 +572,35 @@ components:
       - AGENT
       - BUSINESS
       - DEVICE
-  
+
+
+    payeeFee:
+      type: string
+      description: Fee applicable to the payee for processing the transaction.
+
+    payerFee:
+      type: string
+      description: Fee applicable to the payer for processing the transaction.
+
+    schemeFee:
+      type: string
+      description: Fee applicable to the scheme or hub for processing the transaction.
+
+    PayerFeeCatalyst:
+      title: payerFeeCatalyst
+      type: object
+      description: The Payer Fee which is calculated by the Fee Engine (Catalyst).
+
+    PayeeFeeCatalyst:
+      title: payeeFeeCatalyst
+      type: object
+      description: The Payee Fee which is calculated by the Fee Engine (Catalyst).
+
+    SchemeFeeCatalyst:
+      title: schemeFeeCatalyst
+      type: object
+      description: The Scheme Fee which is calculated by the Fee Engine (Catalyst).
+      
     subScenario:
       pattern: "^[A-Z_]{1,32}$"
       type: string
@@ -695,7 +725,7 @@ Allowed values:
           $ref: '#/components/schemas/FspParty'
         to:
           $ref: '#/components/schemas/FspParty'
-        amountType:
+        amSchemas$0ountType:
           $ref: '#/components/schemas/amountType'
         currency:
           $ref: '#/components/schemas/currency'
@@ -806,11 +836,11 @@ Allowed values:
         amount:
           $ref: '#/components/schemas/amount'
         payeeFee:
-          type: string
+          $ref: '#/components/schemas/payeeFee'
         payerFee:
-          type: string
+          $ref: '#/components/schemas/payerFee'
         schemeFee:
-          type: string  
+          $ref: '#/components/schemas/schemeFee'
         currency:
           $ref: '#/components/schemas/currency'
         currentState:
@@ -879,11 +909,14 @@ Allowed values:
         subScenario:
           $ref: '#/components/schemas/subScenario'
         payeeFee:
-          type: string
+          $ref: '#/components/schemas/payeeFee'
         payerFee:
-          type: string
+          $ref: '#/components/schemas/payerFee'
         schemeFee:
-          type: string
+          $ref: '#/components/schemas/schemeFee'
+
+  
+
         extensionList:
           $ref: '#/components/schemas/FeeExtensionList'
 
