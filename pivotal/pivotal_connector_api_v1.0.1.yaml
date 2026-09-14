@@ -577,19 +577,20 @@ components:
       example: Henrik
     
     FeeExtensionList:
-      title: FeeCatalystExtensionList
+      title: FeeExtensionList
       type: array
       minItems: 3
       maxItems: 16
       items:
         $ref: '#/components/schemas/Extension'
       description: |
-        Extension list containing fee catalyst values.
+        Extension list containing fee-related extension values.
 
-        Expected extension keys include:
-        - payerFeeCatalyst
-        - payeeFeeCatalyst
-        - schemeFeeCatalyst
+        Fee Engine (Catalyst) extension keys include:
+          - payerFeeCatalyst: The payer fee which is calculated by the Fee Engine (Catalyst).
+          - payeeFeeCatalyst: The payee fee which is calculated by the Fee Engine (Catalyst).
+          - schemeFeeCatalyst: The scheme fee which is calculated by the Fee Engine (Catalyst).
+
       example:
         - key: payerFeeCatalyst
           value: "613"
@@ -665,6 +666,42 @@ components:
       - AGENT
       - BUSINESS
       - DEVICE
+      
+    payeeReceiveAmount:
+      type: string
+      description: Amount received by the payee.
+
+    transferAmount:
+      type: string
+      description: Amount transferred from the payer to the payee.
+
+    payeeFee:
+      type: string
+      description: Fee applicable to the payee for processing the transaction
+
+    payerFee:
+      type: string
+      description: Fee applicable to the payer for processing the transaction
+
+    schemeFee:
+      type: string
+      description: Fee applicable to the schme or hub for processing the transaction
+
+    PayerFeeCatalyst:
+      title: payerFeeCatalyst
+      type: object
+      description: The Payer Fee which is calculated by the Fee Engine (Catalyst).
+
+    PayeeFeeCatalyst:
+      title: payeeFeeCatalyst
+      type: object
+      description: The Payee Fee which is calculated by the Fee Engine (Catalyst).
+
+    SchemeFeeCatalyst:
+      title: schemeFeeCatalyst
+      type: object
+      description: The Scheme Fee which is calculated by the Fee Engine (Catalyst).
+
     subScenario:
       pattern: ^[A-Z_]{1,32}$
       type: string
@@ -936,15 +973,15 @@ components:
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
         payeeReceiveAmount:
-          type: string
+          $ref: '#/components/schemas/payeeReceiveAmount'
         transferAmount:
-          type: string
+          $ref: '#/components/schemas/transferAmount'
         payeeFee:
-          type: string
+          $ref: '#/components/schemas/payeeFee'
         payerFee:
-          type: string
+          $ref: '#/components/schemas/payerFee'
         schemeFee:
-          type: string
+          $ref: '#/components/schemas/schemeFee'
         subScenario:
           $ref: '#/components/schemas/subScenario'
         extensionList:
@@ -1008,15 +1045,15 @@ components:
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
         payeeReceiveAmount:
-          type: string
+          $ref: '#/components/schemas/payeeReceiveAmount'
         transferAmount:
-          type: string
+          $ref: '#/components/schemas/transferAmount'
         payeeFee:
-          type: string
+          $ref: '#/components/schemas/payeeFee'
         payerFee:
-          type: string
+          $ref: '#/components/schemas/payerFee'
         schemeFee:
-          type: string
+          $ref: '#/components/schemas/schemeFee'
         subScenario:
           $ref: '#/components/schemas/subScenario'
         extensionList:
@@ -1059,15 +1096,15 @@ components:
         supportedCurrencies:
           $ref: '#/components/schemas/supportedCurrencies'
         payeeReceiveAmount:
-          type: string
+          $ref: '#/components/schemas/payeeReceiveAmount'
         transferAmount:
-          type: string
+          $ref: '#/components/schemas/transferAmount'
         payeeFee:
-          type: string
+          $ref: '#/components/schemas/payeeFee'
         payerFee:
-          type: string
+          $ref: '#/components/schemas/payerFee'
         schemeFee:
-          type: string
+          $ref: '#/components/schemas/schemeFee'
         subScenario:
           $ref: '#/components/schemas/subScenario'
         extensionList:
