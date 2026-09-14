@@ -705,15 +705,15 @@ components:
 
     payeeFee:
       type: string
-      description: Fee applicable to the payee for processing the transaction
+      description: Fee applicable to the payee for processing the transaction.
 
     payerFee:
       type: string
-      description: Fee applicable to the payer for processing the transaction
+      description: Fee applicable to the payer for processing the transaction.
 
     schemeFee:
       type: string
-      description: Fee applicable to the schme or hub for processing the transaction
+      description: Fee applicable to the scheme or hub for processing the transaction.
 
     PayerFeeCatalyst:
       title: payerFeeCatalyst
