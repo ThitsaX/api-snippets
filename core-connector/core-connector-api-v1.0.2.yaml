@@ -584,7 +584,7 @@ components:
 
     schemeFee:
       type: string
-      description: Fee applicable to the schme or hub for processing the transaction.
+      description: Fee applicable to the scheme or hub for processing the transaction.
 
     PayerFeeCatalyst:
       title: payerFeeCatalyst
